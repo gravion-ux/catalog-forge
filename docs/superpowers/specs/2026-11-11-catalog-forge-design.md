@@ -103,7 +103,7 @@ catalog-forge/
 
 | Table | Purpose |
 |---|---|
-| `products` | title, slug, description, vendor, price, compare_at_price, currency, stock, status, source_url, source_platform, source_price, `price_manually_edited` flag, attributes JSON |
+| `products` | title, slug, description, vendor, price, compare_at_price, currency, stock, status, source_url, source_platform, source_price, source_fetched_at, `price_manually_edited` flag, attributes JSON |
 | `variants` | product_id, title, sku, price, compare_at_price, stock, options JSON |
 | `categories` | slug, name, parent_id, position |
 | `product_categories` | product_id, category_id |
