@@ -6,10 +6,12 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from app import __version__
+from app.api.orders import router as orders_router
 from app.api.public import router as public_router
 from app.config import BASE_DIR, Settings, load_settings
 from app.db import init_db
@@ -39,6 +41,16 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.settings = resolved
     app.add_exception_handler(ApiError, api_error_handler)  # type: ignore[arg-type]
     app.include_router(public_router)
+    app.include_router(orders_router)
+
+    @app.exception_handler(RequestValidationError)
+    async def validation_handler(
+        request: Request, exc: RequestValidationError
+    ) -> JSONResponse:
+        messages = "; ".join(str(error.get("msg", "")) for error in exc.errors())
+        return error_response(
+            422, "invalid_request", messages or "The request was not valid."
+        )
 
     if DIST_DIR.exists():
         assets = DIST_DIR / "assets"

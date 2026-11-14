@@ -64,3 +64,57 @@ class ProductListing(BaseModel):
     page: int = 1
     page_size: int = 24
     pages: int = 0
+
+
+class CartItemIn(BaseModel):
+    product_id: int
+    quantity: int = Field(default=1, ge=1, le=999)
+
+
+class QuoteRequest(BaseModel):
+    items: list[CartItemIn] = Field(min_length=1)
+
+
+class QuoteLine(BaseModel):
+    product_id: int
+    title: str
+    unit_price: str
+    quantity: int
+    line_total: str
+    currency: str = "USD"
+
+
+class QuoteOut(BaseModel):
+    lines: list[QuoteLine] = Field(default_factory=list)
+    subtotal: str = "0.00"
+    total: str = "0.00"
+    currency: str = "USD"
+
+
+class CheckoutRequest(BaseModel):
+    email: str = Field(min_length=3)
+    name: str = Field(min_length=1)
+    address: dict[str, str] = Field(default_factory=dict)
+    items: list[CartItemIn] = Field(min_length=1)
+
+
+class OrderItemOut(BaseModel):
+    product_id: int | None = None
+    title: str
+    unit_price: str
+    quantity: int
+
+
+class OrderOut(BaseModel):
+    code: str
+    email: str
+    name: str
+    address: dict[str, str] = Field(default_factory=dict)
+    subtotal: str = "0.00"
+    shipping: str = "0.00"
+    discount: str = "0.00"
+    total: str = "0.00"
+    currency: str = "USD"
+    status: str = "placed"
+    created_at: str = ""
+    items: list[OrderItemOut] = Field(default_factory=list)
