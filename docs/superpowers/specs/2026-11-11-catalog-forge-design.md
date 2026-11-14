@@ -52,8 +52,9 @@ in someone else's CSS.
 
 ### Stack
 
-- **Backend:** Python 3.11+, FastAPI, SQLAlchemy 2.x, SQLite, httpx,
-  BeautifulSoup4, uvicorn.
+- **Backend:** Python 3.11+, FastAPI, SQLite through the standard-library
+  `sqlite3` module with a thin typed repository layer, httpx, BeautifulSoup4,
+  uvicorn.
 - **Frontend:** React 18 + TypeScript (strict) + Vite, plain CSS. No UI
   library, no state library, no icon library.
 - **Tests:** pytest + httpx mock transport for the crawler's own client, and
@@ -68,7 +69,7 @@ catalog-forge/
       main.py            FastAPI app factory, static SPA serving, routers
       config.py          settings from env + .env
       db.py              engine, session, schema creation
-      models.py          SQLAlchemy models
+      models.py          domain dataclasses and row mappers
       schemas.py         Pydantic request/response models
       security.py        admin auth, password hashing, session cookie, CSRF
       catalog/           repository layer (products, categories, images, orders)
