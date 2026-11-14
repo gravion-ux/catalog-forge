@@ -11,11 +11,15 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from app import __version__
+from app.api.admin import router as admin_router
 from app.api.orders import router as orders_router
 from app.api.public import router as public_router
+from app.catalog.admin_users import ensure_admin_user
 from app.config import BASE_DIR, Settings, load_settings
-from app.db import init_db
+from app.db import init_db, session
 from app.errors import ApiError, api_error_handler, error_response
+from app.jobs import CrawlJobs
+from app.security import RateLimiter
 
 DIST_DIR = BASE_DIR / "frontend" / "dist"
 
@@ -26,7 +30,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
-        init_db(app.state.settings.database_path)
+        settings = app.state.settings
+        init_db(settings.database_path)
+        settings.media_dir.mkdir(parents=True, exist_ok=True)
+        with session(settings.database_path) as connection:
+            ensure_admin_user(
+                connection, settings.admin_username, settings.admin_password
+            )
         yield
 
     app = FastAPI(
@@ -39,9 +49,21 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         lifespan=lifespan,
     )
     app.state.settings = resolved
+    app.state.jobs = CrawlJobs(resolved)
+    app.state.login_limiter = RateLimiter(
+        limit=resolved.login_rate_limit_attempts,
+        window_seconds=resolved.login_rate_limit_window_seconds,
+    )
     app.add_exception_handler(ApiError, api_error_handler)  # type: ignore[arg-type]
     app.include_router(public_router)
     app.include_router(orders_router)
+    app.include_router(admin_router)
+
+    app.mount(
+        "/media",
+        StaticFiles(directory=str(resolved.media_dir), check_dir=False),
+        name="media",
+    )
 
     @app.exception_handler(RequestValidationError)
     async def validation_handler(

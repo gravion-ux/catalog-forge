@@ -138,6 +138,12 @@ class RateLimiter:
         hits.append(moment)
         return True
 
+    def blocked(self, key: str, now: float | None = None) -> bool:
+        """True when the key has used up its budget, without recording an attempt."""
+        moment = time.time() if now is None else now
+        hits = self._prune(key, moment)
+        return len(hits) >= self.limit
+
     def retry_after(self, key: str, now: float | None = None) -> int:
         """Seconds until the oldest attempt leaves the window."""
         moment = time.time() if now is None else now

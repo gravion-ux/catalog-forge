@@ -49,10 +49,18 @@ async def run_crawl(
     *,
     on_progress: ProgressCallback | None = None,
     media_dir: Path | str | None = None,
+    run_id: int | None = None,
 ) -> CrawlSummary:
-    """Crawl a shop and import what it finds."""
+    """Crawl a shop and import what it finds.
+
+    When a run id is given the crawl continues that run instead of opening a
+    new one, which is how a crawl started from the admin panel is tracked.
+    """
     started_at = _now()
-    run_id = _start_run(conn, url, started_at)
+    if run_id is None:
+        run_id = _start_run(conn, url, started_at)
+    else:
+        _resume_run(conn, run_id, started_at)
 
     pages_crawled = 0
     products_found = 0
@@ -169,6 +177,15 @@ def _start_run(conn: sqlite3.Connection, url: str, started_at: str) -> int:
     )
     conn.commit()
     return int(cursor.lastrowid)
+
+
+def _resume_run(conn: sqlite3.Connection, run_id: int, started_at: str) -> None:
+    """Mark an existing run as running."""
+    conn.execute(
+        "UPDATE crawl_runs SET status = 'running', started_at = ? WHERE id = ?",
+        (started_at, run_id),
+    )
+    conn.commit()
 
 
 def _finish_run(

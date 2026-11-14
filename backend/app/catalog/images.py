@@ -38,3 +38,17 @@ def add_image(
 
 def clear_images(conn: sqlite3.Connection, product_id: int) -> None:
     conn.execute("DELETE FROM images WHERE product_id = ?", (product_id,))
+
+
+def media_url(local_path: str | None) -> str | None:
+    """The address the storefront serves a stored image from.
+
+    Images are kept under ``data/media`` and the path in the database starts
+    with ``media/``, so the address is the same path under ``/media``.
+    """
+    if not local_path:
+        return None
+    relative = local_path
+    if relative.startswith("media/"):
+        relative = relative[len("media/") :]
+    return f"/media/{relative}"

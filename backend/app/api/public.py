@@ -6,7 +6,7 @@ from fastapi import APIRouter, Query, Request
 
 from app import __version__
 from app.catalog.categories import list_categories
-from app.catalog.images import images_for
+from app.catalog.images import images_for, media_url
 from app.catalog.products import (
     DEFAULT_PAGE_SIZE,
     MAX_PAGE_SIZE,
@@ -80,7 +80,7 @@ def products(
                     currency=product.currency,
                     stock=product.stock,
                     vendor=product.vendor,
-                    image=images[0].local_path if images else None,
+                    image=media_url(images[0].local_path) if images else None,
                 )
             )
 

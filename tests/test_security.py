@@ -110,3 +110,15 @@ def test_rate_limiter_forgets_old_attempts() -> None:
     time.sleep(1.1)
 
     assert limiter.allow("1.2.3.4") is True
+
+
+def test_rate_limiter_reports_a_blocked_key_without_recording() -> None:
+    limiter = RateLimiter(limit=2, window_seconds=60)
+
+    assert limiter.blocked("1.2.3.4") is False
+
+    limiter.allow("1.2.3.4")
+    limiter.allow("1.2.3.4")
+
+    assert limiter.blocked("1.2.3.4") is True
+    assert limiter.blocked("5.6.7.8") is False
