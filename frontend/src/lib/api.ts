@@ -3,12 +3,29 @@
  * Every call goes to the backend through `VITE_API_BASE`, and every failure
  * becomes an `ApiError` carrying the message the server sent, so a page can
  * show the server's own words.
+ *
+ * Every call that changes something carries the CSRF token of the admin
+ * session. The server checks it against the session before it changes
+ * anything, so a page never has to think about it.
  */
 
 const API_BASE = (import.meta.env.VITE_API_BASE ?? 'http://localhost:8000').replace(
   /\/+$/,
   '',
 )
+
+/** The CSRF token of the admin session, when there is one. */
+let csrfToken: string | null = null
+
+/** Remember the CSRF token of the admin session, or forget it with `null`. */
+export function setCsrfToken(token: string | null): void {
+  csrfToken = token
+}
+
+/** The CSRF token of the admin session, if there is one. */
+export function getCsrfToken(): string | null {
+  return csrfToken
+}
 
 export class ApiError extends Error {
   readonly status: number
@@ -41,6 +58,7 @@ interface ErrorPayload {
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
   const headers: Record<string, string> = { Accept: 'application/json' }
   if (body !== undefined) headers['Content-Type'] = 'application/json'
+  if (method !== 'GET' && csrfToken !== null) headers['X-CSRF-Token'] = csrfToken
 
   let response: Response
   try {
