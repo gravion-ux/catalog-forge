@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="450" viewBox="0 0 600 450">
+  <rect width="600" height="450" fill="#fee2e2" />
+  <circle cx="300" cy="240" r="120" fill="#b42318" />
+  <text x="300" y="255" fill="#ffffff" font-family="sans-serif" font-size="42" text-anchor="middle">Red Hat</text>
+</svg>
