@@ -173,7 +173,7 @@ class AdminProductDetail(AdminProductOut):
     description: str = ""
     attributes: dict[str, object] = Field(default_factory=dict)
     images: list[AdminImageOut] = Field(default_factory=list)
-    categories: list[CategoryOut] = Field(default_factory=list)
+    categories: list[AdminCategoryOut] = Field(default_factory=list)
     variants: list[VariantOut] = Field(default_factory=list)
 
 
