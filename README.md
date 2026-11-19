@@ -45,8 +45,10 @@ cd ..
 export CATALOG_FORGE_ADMIN_PASSWORD="your-password"
 
 # Run the server
-python -m uvicorn app.main:app
+python -m uvicorn app.main:app --app-dir backend
 ```
+
+The `--app-dir backend` puts the `app` package on the import path.
 
 Then open <http://localhost:8000> in your browser.
 
@@ -71,6 +73,15 @@ Changes made through the admin panel:
 - Set the live price (perpetual overrides the source)
 - Apply a markup, delta, or absolute price to many products at once
 - Edit the product details directly
+
+A price you set by hand is never overwritten by a later crawl.
+
+## Documentation
+
+- [`docs/USER-GUIDE.md`](docs/USER-GUIDE.md) — how to crawl a shop and edit
+  prices, step by step
+- [`docs/API.md`](docs/API.md) — every endpoint with its request and response
+  shapes
 
 ## License
 
