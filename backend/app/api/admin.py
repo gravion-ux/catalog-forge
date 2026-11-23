@@ -292,6 +292,11 @@ def bulk_price(request: Request, payload: BulkPriceRequest) -> BulkPriceResult:
         value = Decimal(text)
     except (InvalidOperation, ValueError):
         raise ApiError(422, "invalid_request", "The value must be a number.")
+    if not value.is_finite():
+        # "NaN" and "Infinity" are valid Decimals, so the parse above does not
+        # catch them, but they are not prices and every later comparison with
+        # them raises.
+        raise ApiError(422, "invalid_request", "The value must be a number.")
 
     unit = (payload.unit or "").strip().lower()
     factor: Decimal | None = None

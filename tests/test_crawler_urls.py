@@ -104,3 +104,14 @@ def test_normalize_url_rejects_nothing_on_its_own() -> None:
 
 def test_url_not_allowed_is_a_value_error() -> None:
     assert issubclass(UrlNotAllowed, ValueError)
+
+
+def test_the_rfc6598_shared_address_space_is_refused() -> None:
+    """100.64.0.0/10 is not globally routable, so it is not public."""
+    assert is_public_url("http://100.64.0.1/", resolver=PUBLIC) is False
+    assert is_public_url("http://100.127.255.254/", resolver=PUBLIC) is False
+
+
+def test_the_alibaba_cloud_metadata_address_is_refused() -> None:
+    """The Alibaba metadata endpoint is not link-local, so it needs its own rule."""
+    assert is_public_url("http://100.100.100.200/latest/meta-data/", resolver=PUBLIC) is False

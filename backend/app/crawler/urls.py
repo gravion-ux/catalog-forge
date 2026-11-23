@@ -23,8 +23,14 @@ BLOCKED_HOSTNAMES = frozenset(
         "metadata",
         "instance-data",
         "fd00:ec2::254",
+        "100.100.100.200",
     }
 )
+
+#: RFC 6598 shared address space. It is not globally routable, but Python's
+#: ipaddress does not treat 100.64.0.0/10 as private, so it has to be
+#: refused explicitly. Carrier-grade NAT and tailnet overlays live here.
+SHARED_ADDRESS_SPACE = ipaddress.ip_network("100.64.0.0/10")
 
 Resolver = Callable[[str, object], list]
 
@@ -76,6 +82,8 @@ def is_public_ip(address: str) -> bool:
     if ip.is_reserved:
         return False
     if ip.is_private:
+        return False
+    if ip.version == 4 and ip in SHARED_ADDRESS_SPACE:
         return False
     return True
 

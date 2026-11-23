@@ -143,6 +143,45 @@ def test_editing_a_price_updates_the_product_and_writes_history(
     assert row["price_manually_edited"] == 1
 
 
+def test_a_non_finite_bulk_price_is_refused(
+    conn: sqlite3.Connection, client: TestClient
+) -> None:
+    """NaN and Infinity are valid Decimals but they are not prices."""
+    product = seed_product(conn, slug="blue-shirt", price="19.90")
+    token = login(client)
+
+    for value in ("NaN", "Infinity", "sNaN"):
+        response = client.post(
+            "/api/admin/products/bulk-price",
+            json={"mode": "set", "value": value, "product_ids": [product]},
+            headers=csrf(token),
+        )
+
+        assert response.status_code == 422, value
+        assert response.json()["error"]["code"] == "invalid_request", value
+
+    row = conn.execute("SELECT price FROM products WHERE id = ?", (product,)).fetchone()
+    assert row["price"] == "19.90"
+
+
+def test_a_non_finite_price_is_never_stored(
+    conn: sqlite3.Connection, client: TestClient
+) -> None:
+    """A price of "NaN" must never reach the products table."""
+    product = seed_product(conn, slug="blue-shirt", price="19.90")
+    token = login(client)
+
+    response = client.patch(
+        f"/api/admin/products/{product}/price",
+        json={"price": "NaN"},
+        headers=csrf(token),
+    )
+
+    assert response.status_code in (200, 422), response.text
+    row = conn.execute("SELECT price FROM products WHERE id = ?", (product,)).fetchone()
+    assert row["price"] != "NaN"
+
+
 def test_a_markup_bulk_update_multiplies_the_prices(
     conn: sqlite3.Connection, client: TestClient
 ) -> None:

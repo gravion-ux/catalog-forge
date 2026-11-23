@@ -11,11 +11,24 @@ from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 TWO_PLACES = Decimal("0.01")
 ZERO = Decimal("0.00")
 
+#: A price with more integer digits than this is junk, not a price. It also
+#: keeps every value inside the decimal context precision, so quantize can
+#: never raise on a value that came from a request body.
+MAX_MONEY_INTEGER_DIGITS = 24
+
+
+def _integer_digits(number: Decimal) -> int:
+    """How many digits the integer part of a value has."""
+    _, digits, exponent = number.as_tuple()
+    if not isinstance(exponent, int):
+        return MAX_MONEY_INTEGER_DIGITS + 1
+    return max(1, len(digits) + exponent)
+
 
 def to_decimal(value: object) -> Decimal:
     """Parse a price-like value into a Decimal, treating junk as zero."""
     if isinstance(value, Decimal):
-        return value
+        return value if _is_money(value) else ZERO
     if value is None:
         return ZERO
     text = str(value).strip().replace(",", "").replace(" ", "")
@@ -24,9 +37,22 @@ def to_decimal(value: object) -> Decimal:
     if not text:
         return ZERO
     try:
-        return Decimal(text)
+        parsed = Decimal(text)
     except (InvalidOperation, ValueError):
         return ZERO
+    return parsed if _is_money(parsed) else ZERO
+
+
+def _is_money(number: Decimal) -> bool:
+    """True when a Decimal can be written as a price.
+
+    ``Decimal("NaN")``, ``Decimal("Infinity")`` and ``Decimal("sNaN")`` are
+    valid Decimals but they are not prices: the first quantizes to the literal
+    string "NaN" and the others raise on quantize.
+    """
+    if not number.is_finite():
+        return False
+    return _integer_digits(number) <= MAX_MONEY_INTEGER_DIGITS
 
 
 def format_money(value: object) -> str:
