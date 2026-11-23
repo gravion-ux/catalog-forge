@@ -1,5 +1,7 @@
 # Catalog Forge
 
+[![CI](https://github.com/gravion-ux/catalog-forge/actions/workflows/ci.yml/badge.svg)](https://github.com/gravion-ux/catalog-forge/actions/workflows/ci.yml)
+
 Crawl any public shop's catalog and run it as your own storefront, with a
 separate admin panel for editing the catalog and the prices.
 
