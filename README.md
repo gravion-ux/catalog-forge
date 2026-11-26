@@ -1,9 +1,10 @@
+<p align="center"><img src="assets/banner.svg" alt="catalog-forge banner" width="100%"/></p>
+
 # Catalog Forge
 
-[![CI](https://github.com/gravion-ux/catalog-forge/actions/workflows/ci.yml/badge.svg)](https://github.com/gravion-ux/catalog-forge/actions/workflows/ci.yml)
+[![CI](https://github.com/gravion-ux/catalog-forge/actions/workflows/ci.yml/badge.svg)](https://github.com/gravion-ux/catalog-forge/actions/workflows/ci.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-Crawl any public shop's catalog and run it as your own storefront, with a
-separate admin panel for editing the catalog and the prices.
+**Crawl any public shop's catalog and run it as your own storefront, with a separate admin panel for editing the catalog and the prices.**
 
 Catalog Forge reads a shop's public product pages, imports the products,
 images, prices, variants and categories into a local SQLite database, and
